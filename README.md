@@ -35,31 +35,29 @@ graph TD
     subgraph Platform
         Dashboard[React Dashboard]
         Backend[Node.js Orchestrator API]
-        Queue[Provisioning Queue]
         Worker[Provisioning Worker]
     end
 
-    subgraph Kubernetes Cluster (Kind / k3s)
+    subgraph Kubernetes_Cluster
         Ingress[Nginx Ingress]
 
-        subgraph Store Namespace 1
-            WP1[WordPress + WooCommerce Pod]
-            DB1[MySQL Pod]
+        subgraph Store_Namespace_1
+            WP1[WordPress + WooCommerce]
+            DB1[MySQL]
             PVC1[Persistent Volume]
         end
 
-        subgraph Store Namespace 2
-            WP2[WordPress + WooCommerce Pod]
-            DB2[MySQL Pod]
+        subgraph Store_Namespace_2
+            WP2[WordPress + WooCommerce]
+            DB2[MySQL]
             PVC2[Persistent Volume]
         end
     end
 
     User --> Dashboard
-    Dashboard -->|REST API| Backend
-    Backend --> Queue
-    Queue --> Worker
-    Worker -->|Helm Install| Ingress
+    Dashboard --> Backend
+    Backend --> Worker
+    Worker --> Ingress
 
     Ingress --> WP1
     Ingress --> WP2

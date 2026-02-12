@@ -19,8 +19,7 @@ A production-ready platform to provision fully functional, isolated **WooCommerc
 2.  **Abuse Prevention**: Global Quota (Max 50 stores), Queue limits.
 3.  **Isolation & Guardrails**: `ResourceQuota` & `LimitRange` per namespace.
 4.  **Idempotency & Recovery**: Auto-recovers from interrupted provisioning on restart.
-5.  **Upgrades & Rollbacks**: Native Helm support for safe version changes.
-6.  **Observability**: Detailed event logging in Dashboard.
+5.  **Observability**: Detailed event logging in Dashboard.
 
 ---
 

@@ -29,21 +29,59 @@ The platform follows a **Controller/Orchestrator** pattern:
 
 ```mermaid
 graph TD
-    User[User] -->|Web UI| Dashboard[React Dashboard]
-    Dashboard -->|API| Backend[Node.js Orchestrator]
-    Backend -->|Queue| Worker[Provisioning Worker]
-    Worker -->|Helm Install| K8s[(Kubernetes Cluster)]
-    
-    subgraph "Kubernetes (Kind/k3s)"
-        Ingress[Nginx Ingress]
-        
-        box1[Namespace: store-1]
-        box2[Namespace: store-2]
-        
-        Ingress -->|store-1.127.0.0.1.nip.io| box1
-        Ingress -->|store-2.127.0.0.1.nip.io| box2
+
+    User[User Browser]
+
+    subgraph Platform
+        Dashboard[React Dashboard]
+        Backend[Node.js Orchestrator API]
+        Queue[Provisioning Queue]
+        Worker[Provisioning Worker]
     end
+
+    subgraph Kubernetes Cluster (Kind / k3s)
+        Ingress[Nginx Ingress]
+
+        subgraph Store Namespace 1
+            WP1[WordPress + WooCommerce Pod]
+            DB1[MySQL Pod]
+            PVC1[Persistent Volume]
+        end
+
+        subgraph Store Namespace 2
+            WP2[WordPress + WooCommerce Pod]
+            DB2[MySQL Pod]
+            PVC2[Persistent Volume]
+        end
+    end
+
+    User --> Dashboard
+    Dashboard -->|REST API| Backend
+    Backend --> Queue
+    Queue --> Worker
+    Worker -->|Helm Install| Ingress
+
+    Ingress --> WP1
+    Ingress --> WP2
+
+    WP1 --> DB1
+    DB1 --> PVC1
+
+    WP2 --> DB2
+    DB2 --> PVC2
 ```
+The platform follows a controller–orchestrator architecture.
+
+1. The user interacts with the React dashboard.
+2. The dashboard calls the Node.js backend API.
+3. The backend enqueues store provisioning requests.
+4. A worker processes the queue and installs a Helm chart.
+5. Kubernetes creates a dedicated namespace per store.
+6. Each store runs:
+   - WordPress + WooCommerce
+   - MySQL database
+   - Persistent storage
+   - Ingress for public access
 
 ### Tradeoffs & Decisions
 | Aspect | Decision | Tradeoff |

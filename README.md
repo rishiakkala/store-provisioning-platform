@@ -164,3 +164,84 @@ To deploy to a production environment (e.g., DigitalOcean Droplet with k3s):
 - Stores API: `http://localhost:3000/api/stores`
 - Kubernetes: `kubectl get ingress --all-namespaces`, `kubectl get pods --all-namespaces`
 
+---
+
+## 📦 Deliverables (Round 1)
+
+- Local setup instructions
+  - One‑click scripts: `setup.ps1`, `setup.sh`
+  - Manual steps section covers backend and dashboard dev servers
+
+- How to create a store and place an order
+  - UI steps under “Usage Guide” and “Place an Order” above
+  - API option:
+    ```bash
+    curl -X POST http://localhost:3000/api/stores \
+      -H "Content-Type: application/json" \
+      -d '{"name":"Test Store","type":"woocommerce"}'
+    ```
+
+- Source code included
+  - Backend (`backend/`): Express API, PostgreSQL, orchestrator, Kubernetes client
+  - Dashboard (`dashboard/`): React + Vite + Tailwind UI
+  - Provisioning (`backend/services/orchestrator.js`, `backend/services/helmClient.js`)
+
+- Helm charts + values files
+  - Per‑store chart: `helm/store-template` (WordPress + MySQL + Ingress + PVCs)
+  - Platform values: `helm/store-platform/values-local.yaml`, `helm/store-platform/values-prod.yaml`
+
+---
+
+## 📝 System Design & Tradeoffs (Short Note)
+
+- Architecture choice
+  - Controller/Orchestrator pattern
+  - Backend computes host and invokes Helm per store
+  - Dashboard polls API for status and events
+  - References: `backend/services/orchestrator.js:196`, `backend/services/helmClient.js:21`, `dashboard/src/App.jsx:29`
+
+- Idempotency / failure handling / cleanup
+  - Unique `storeId` avoids collisions; retries safe
+  - 10‑minute timeout with failure marking and namespace cleanup
+  - Recovery scan on boot marks stuck provisions as failed
+  - References: `backend/services/orchestrator.js:160`, `backend/services/orchestrator.js:175`, `backend/services/orchestrator.js:25`, `backend/services/kubernetesClient.js:138`
+
+- Production differences
+  - DNS: `<storeId>.<clusterIP>.nip.io` → set `CLUSTER_IP` to VPS public IP
+  - Ingress: switch class to `nginx` or `traefik` in values
+  - Storage: set storageClass (e.g., `local-path` on k3s) and larger PVC sizes
+  - Secrets: generated at install time; no hardcoded secrets in source
+  - References: `helm/store-template/templates/ingress.yaml:14`, `helm/store-template/values.yaml:31-35`, `helm/store-platform/values-prod.yaml:1-11`, `backend/services/helmClient.js:21`
+
+---
+
+## 🌟 Ways to Stand Out (Implemented)
+
+- Stronger multi‑tenant isolation and guardrails
+  - Namespace‑level `ResourceQuota` and `LimitRange` applied per store
+  - References: `helm/store-template/templates/resourcequota.yaml:8`, `helm/store-template/templates/limit-range.yaml:8`
+
+- Idempotency and recovery
+  - Safe retries via unique `storeId`; reconcile cleans up on failure
+  - Recovery scan marks in‑progress stores as failed after restart
+  - References: `backend/services/orchestrator.js:25`, `backend/services/orchestrator.js:80`, `backend/services/orchestrator.js:160`
+
+- Abuse prevention beyond rate limiting
+  - Global caps and queue limits; per‑API active store cap with 429
+  - Provisioning timeout with failure status and cleanup
+  - Audit trail via `store_events` and `/api/events`
+  - References: `backend/services/orchestrator.js:15`, `backend/services/orchestrator.js:169`, `backend/services/stores.js:61`, `backend/server.js:61`
+
+- Observability
+  - Activity log surface in dashboard; backend metrics endpoint
+  - References: `dashboard/src/App.jsx:25`, `backend/server.js:28`, `backend/server.js:61`
+
+- Scaling plan (implemented)
+  - Concurrency controls in orchestrator; platform replicas in prod values
+  - References: `backend/services/orchestrator.js:12`, `helm/store-platform/values-prod.yaml:20`, `helm/store-platform/values-prod.yaml:26`
+
+### Not Yet Implemented
+- Production‑like VPS deployment demo (live VPS with same charts)
+- Network and security hardening (RBAC, NetworkPolicies, non‑root)
+- Upgrades and rollback demonstration
+

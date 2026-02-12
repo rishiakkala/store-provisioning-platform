@@ -1,0 +1,16 @@
+{{- if .Values.limitRange.enabled }}
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: store-limits
+  namespace: {{ .Values.namespace }}
+spec:
+  limits:
+  - default:
+      memory: {{ .Values.limitRange.defaultLimitMemory | default "512Mi" | quote }}
+      cpu: {{ .Values.limitRange.defaultLimitCPU | default "500m" | quote }}
+    defaultRequest:
+      memory: {{ .Values.limitRange.defaultRequestMemory | default "128Mi" | quote }}
+      cpu: {{ .Values.limitRange.defaultRequestCPU | default "100m" | quote }}
+    type: Container
+{{- end }}

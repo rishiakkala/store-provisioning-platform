@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: woocommerce
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: woocommerce
+    store-id: {{ .Values.storeId }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: woocommerce
+  template:
+    metadata:
+      labels:
+        app: woocommerce
+        store-id: {{ .Values.storeId }}
+    spec:
+      containers:
+      - name: wordpress
+        image: {{ .Values.wordpress.image }}
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: "mysql-service:3306"
+        - name: WORDPRESS_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: database
+        - name: WORDPRESS_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: username
+        - name: WORDPRESS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-credentials
+              key: password
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: {{ .Values.wordpress.resources.requests.memory | quote }}
+            cpu: {{ .Values.wordpress.resources.requests.cpu | quote }}
+          limits:
+            memory: {{ .Values.wordpress.resources.limits.memory | quote }}
+            cpu: {{ .Values.wordpress.resources.limits.cpu | quote }}
+        readinessProbe:
+          httpGet:
+            path: /wp-login.php
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          failureThreshold: 10
+        livenessProbe:
+          httpGet:
+            path: /wp-login.php
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          failureThreshold: 5
+        volumeMounts:
+        - name: wordpress-storage
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-storage
+        persistentVolumeClaim:
+          claimName: wordpress-data

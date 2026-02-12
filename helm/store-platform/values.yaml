@@ -1,0 +1,26 @@
+environment: local
+
+ingress:
+  clusterIP: "127.0.0.1"
+  tls: false
+
+storage:
+  className: "standard"
+  mysqlSize: "5Gi"
+  wordpressSize: "10Gi"
+
+resources:
+  mysql:
+    memory: "512Mi"
+    cpu: "500m"
+  wordpress:
+    memory: "512Mi"
+    cpu: "500m"
+
+backend:
+  replicaCount: 1
+  port: 3000
+
+dashboard:
+  replicaCount: 1
+  port: 3001

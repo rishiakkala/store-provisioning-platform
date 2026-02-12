@@ -1,0 +1,28 @@
+# Production (k3s on VPS)
+environment: production
+
+ingress:
+  clusterIP: "YOUR_VPS_IP" # Change to your VPS IP
+  tls: true # Enable TLS with cert-manager
+  certEmail: "your@email.com"
+
+storage:
+  className: "local-path" # k3s default storage class
+  mysqlSize: "20Gi"
+  wordpressSize: "30Gi"
+
+resources:
+  mysql:
+    memory: "1Gi"
+    cpu: "1000m"
+  wordpress:
+    memory: "1Gi"
+    cpu: "1000m"
+
+backend:
+  replicaCount: 2 # Scale horizontally in prod
+  port: 3000
+
+dashboard:
+  replicaCount: 2
+  port: 3001

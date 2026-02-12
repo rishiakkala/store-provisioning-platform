@@ -1,0 +1,6 @@
+apiVersion: v2
+name: store-template
+description: WooCommerce store deployment template
+type: application
+version: 1.0.0
+appVersion: "6.4"

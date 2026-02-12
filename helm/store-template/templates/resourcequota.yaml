@@ -1,0 +1,30 @@
+{{- if .Values.resourceQuota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: store-quota
+  namespace: {{ .Values.namespace }}
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: "4Gi"
+    limits.cpu: {{ .Values.resourceQuota.maxCPU | quote }}
+    limits.memory: {{ .Values.resourceQuota.maxMemory | quote }}
+    persistentvolumeclaims: {{ .Values.resourceQuota.maxPVCs | quote }}
+    requests.storage: {{ .Values.resourceQuota.maxStorage | quote }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: store-limits
+  namespace: {{ .Values.namespace }}
+spec:
+  limits:
+  - default:
+      memory: "512Mi"
+      cpu: "500m"
+    defaultRequest:
+      memory: "256Mi"
+      cpu: "100m"
+    type: Container
+{{- end }}

@@ -1,0 +1,19 @@
+{{- if .Values.resourceQuota.enabled }}
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: store-quota
+  namespace: {{ .Values.namespace }}
+spec:
+  hard:
+    requests.cpu: {{ .Values.resourceQuota.maxCPU | default "2" | quote }}
+    requests.memory: {{ .Values.resourceQuota.maxMemory | default "4Gi" | quote }}
+    limits.cpu: {{ .Values.resourceQuota.maxCPU | default "4" | quote }}
+    limits.memory: {{ .Values.resourceQuota.maxMemory | default "8Gi" | quote }}
+    requests.storage: {{ .Values.resourceQuota.maxStorage | default "50Gi" | quote }}
+    persistentvolumeclaims: {{ .Values.resourceQuota.maxPVCs | default "10" | quote }}
+    pods: "20"
+    services: "10"
+    secrets: "20"
+    configmaps: "10"
+{{- end }}

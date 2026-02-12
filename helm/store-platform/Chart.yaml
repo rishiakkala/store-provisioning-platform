@@ -1,0 +1,6 @@
+apiVersion: v2
+name: store-platform
+description: Store provisioning platform (dashboard + backend)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

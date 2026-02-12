@@ -135,22 +135,6 @@ We have provided automated scripts to set up the environment:
 
 ---
 
-## ☁️ Production Setup (VPS / k3s)
-
-To deploy to a production environment (e.g., DigitalOcean Droplet with k3s):
-
-1.  **Infrastructure**: Install k3s (`curl -sfL https://get.k3s.io | sh -`).
-2.  **Configuration**:
-    - Edit `helm/store-template/values.yaml` and ensure `ingress.className: "nginx"`.
-    - Set `ingress.clusterIP` to your **public IP** (e.g., `203.0.113.42`).
-    - Optionally install NGINX Ingress on k3s or switch to Traefik by setting `ingress.className: "traefik"`.
-    - Update backend `.env` with `CLUSTER_IP=<your public IP>`.
-3.  **Deploy Backend**: Run the Node.js backend on the Docker and expose port `3000`.
-4.  **Dashboard**: Serve the React dashboard (e.g., `vite build` + static hosting) and proxy `/api` to the backend.
-5.  **Scaling**: For horizontal scaling, externalize the queue (e.g., Redis) and run multiple orchestrator replicas.
-
----
-
 ## 🛒 Usage Guide
 
 1.  **Create Store**: Click **"New Store"** -> Enter "My Shop".
